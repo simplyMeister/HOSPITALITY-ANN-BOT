@@ -208,4 +208,25 @@ def main():
     application.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
+    import os
+    import threading
+    from http.server import BaseHTTPRequestHandler, HTTPServer
+
+    def run_dummy_server():
+        port = int(os.environ.get("PORT", 8080))
+        class Handler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                self.send_response(200)
+                self.send_header('Content-type', 'text/plain')
+                self.end_headers()
+                self.wfile.write(b"Bot is running!")
+            def log_message(self, format, *args):
+                pass # Suppress logs
+                
+        server = HTTPServer(('0.0.0.0', port), Handler)
+        server.serve_forever()
+
+    # Start the dummy web server in a background thread for platforms like Render
+    threading.Thread(target=run_dummy_server, daemon=True).start()
+    
     main()
